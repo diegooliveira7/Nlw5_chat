@@ -2,22 +2,24 @@
 import { Request, Response } from "express";
 import { getCustomRepository } from "typeorm";
 import { SettingsRepository } from "../repositories/SettingsRepository";
+import { SettigService } from "../services/SettingsService";
 
 class SettingsController{
 
     async create(request: Request, response: Response) {
         const { chat, username } = request.body;//desestruturando
 
-        const settingsRepository = getCustomRepository(SettingsRepository);
+        const settingsService = new SettigService();
+
+        try {
+            const setting = await settingsService.create({ chat, username });
     
-        const setting = settingsRepository.create({
-            chat,
-            username
-        })
-    
-        await settingsRepository.save(setting);
-    
-        return response.json(setting); 
+            return response.json(setting); 
+        } catch (error) {//Quando o erro subir para a camada superior ele captura e manda como json para o cliente
+            return response.status(400).json({
+                message: error.message,
+            });
+        }
     }
 
 }
